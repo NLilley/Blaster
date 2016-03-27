@@ -13,9 +13,7 @@ const gameHeight = 480;
 let appDOMElement = document.querySelector('.app');
 
 // TODO We currently bind this to the game object.  Find a better solution than this!
-let stash = {
-};
-
+let stash = {};
 
 new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, appDOMElement, {
     preload: preload,
@@ -24,9 +22,7 @@ new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, appDOMElement, {
 }, null, true);
 
 
-function preload(game) {
-
-}
+function preload(game) {}
 
 function create(game) {
     //game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -70,8 +66,7 @@ function create(game) {
     game.stash.player = player; // TODO Adding to stash!
 
     let playerBullets = game.add.group();
-    _.range(128).map(() => {
-        //TODO Kill bullets after x ammount of time!
+    _.range(constants.PLAYER_BULLET_AMOUNT).map(() => {
         let bullet = game.add.sprite(0, 0, null, 0, playerBullets);
         game.physics.arcade.enable(bullet);
 
