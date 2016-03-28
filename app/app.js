@@ -25,6 +25,8 @@ new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, appDOMElement, {
 function preload(game) {}
 
 function create(game) {
+
+    game.add.text(0,0, 'Placeholder Text!', {fill: 'white'});
     //game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     //game.input.onDown.add(()=> {
     //    (game.scale.isFullScreen) ? game.scale.stopFullScreen() : game.scale.startFullScreen(false);
