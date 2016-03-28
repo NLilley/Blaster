@@ -86,6 +86,7 @@ function create(game) {
     _.range(constants.ENEMY_AMOUNT_MAX).map(()=> {
         let enemy = game.add.sprite(0, 0, null, 0, enemies);
         game.physics.arcade.enable(enemy);
+        enemy.lastFired = 0; // TODO Also storing fire information on a sprite.  Abstract this out!
 
         let enemyGraphic = game.add.graphics();
         enemyGraphic.lineStyle(2, 0xffffff, 1);
@@ -106,7 +107,7 @@ function create(game) {
 
     let enemyBullets = game.add.group();
     _.range(constants.ENEMY_BULLET_AMOUNT).map(()=> {
-        let bullet = game.add.sprite(0, 0, null, 0, playerBullets);
+        let bullet = game.add.sprite(0, 0, null, 0, enemyBullets);
         game.physics.arcade.enable(bullet);
 
         let bulletGraphic = game.add.graphics();
@@ -148,13 +149,29 @@ function update(game) {
         aliveEnemies.map(enemy => {
             enemy.rotation = enemy.position.angle(player.position);
 
-            enemy.body.acceleration = Phaser.Point
+            let normalToPlayer = Phaser.Point
                 .subtract(player.position, enemy.position)
-                .normalize()
+                .normalize();
+
+            enemy.body.acceleration = normalToPlayer
+                .clone()
                 .multiply(constants.ENEMY_ACCELLERATION, constants.ENEMY_ACCELLERATION);
 
             if (enemy.body.velocity.getMagnitude() > constants.ENEMY_SPEED_MAX) {
                 enemy.body.velocity.setMagnitude(constants.ENEMY_SPEED_MAX);
+            }
+
+            if (enemy.position.distance(player.position) < constants.ENEMY_FIRE_RANGE &&
+                game.time.now - enemy.lastFired > constants.ENEMY_FIRE_RATE) {
+                let bullet = game.stash.enemyBullets.children.find(bullet => !bullet.alive);
+                if (bullet != null) {
+                    bullet.reset(enemy.position.x, enemy.position.y);
+                    bullet.body.velocity = normalToPlayer
+                        .clone()
+                        .multiply(constants.ENEMY_BULLET_SPEED, constants.ENEMY_BULLET_SPEED)
+                        .add(enemy.body.velocity.x, enemy.body.velocity.y);
+                    enemy.lastFired = game.time.now;
+                }
             }
         });
 
@@ -164,13 +181,23 @@ function update(game) {
             game.stash.playerScore += 1;
         });
 
-        game.physics.arcade.collide(game.stash.player, game.stash.enemies, (player, enemy) => {
-            player.kill();
-            enemy.kill();
+        let gameOver = () => {
             game.add.text(player.position.x, player.position.y, 'GAME OVER!', {
                 fill: 'white',
                 font: '72px Arial'
             }).anchor.set(0.5);
+        };
+
+        game.physics.arcade.collide(game.stash.player, game.stash.enemies, (player, enemy) => {
+            player.kill();
+            enemy.kill();
+            gameOver();
+        });
+
+        game.physics.arcade.collide(game.stash.player, game.stash.enemyBullets, (player, bullet) => {
+            player.kill();
+            bullet.kill();
+            gameOver();
         });
     } else {
         aliveEnemies.map(enemy => {
