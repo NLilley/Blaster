@@ -1,4 +1,4 @@
-import constants from './constants'
+import * as constants from './constants'
 
 let getNormalizedMouseVector = (x, y)=> {
     return new Phaser.Point(
@@ -7,14 +7,12 @@ let getNormalizedMouseVector = (x, y)=> {
     ).normalize();
 };
 
-let getMouseRotation = (x, y) => {
-    let vec = getNormalizedMouseVector(x, y);
-    let angle = Math.asin(vec.y);
-    if (vec.x < 0) {
-        angle = Math.PI - angle;
-    }
-
-    return angle;
-};
+{
+    let baselineVector = new Phaser.Point(0, 0);
+    var getMouseRotation = (x, y) => {
+        let vec = getNormalizedMouseVector(x, y);
+        return baselineVector.angle(vec);
+    };
+}
 
 export {getMouseRotation, getNormalizedMouseVector}

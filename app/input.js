@@ -1,4 +1,4 @@
-import constants from './constants';
+import * as constants from './constants';
 import {getNormalizedMouseVector, getMouseRotation} from './math'
 
 /**
@@ -29,18 +29,31 @@ let handlePlayerMovement = (cursors, player) => {
     if (cursors.right.isDown || cursors.d.isDown) x++;
 
     if (Math.abs(x) + Math.abs(y) == 2) {
-        player.body.velocity.x = x * constants.DIAGONAL_MOVEMENT_MULTIPLIER * constants.PLAYER_SPEED_MAX;
-        player.body.velocity.y = y * constants.DIAGONAL_MOVEMENT_MULTIPLIER * constants.PLAYER_SPEED_MAX;
+        player.body.acceleration.set(
+            x * constants.DIAGONAL_MOVEMENT_MULTIPLIER * constants.PLAYER_ACCELERATION,
+            y * constants.DIAGONAL_MOVEMENT_MULTIPLIER * constants.PLAYER_ACCELERATION
+        );
     } else {
-        player.body.velocity.x = x * constants.PLAYER_SPEED_MAX;
-        player.body.velocity.y = y * constants.PLAYER_SPEED_MAX;
+        player.body.acceleration.set(
+            x * constants.PLAYER_ACCELERATION,
+            y * constants.PLAYER_ACCELERATION
+        );
+    }
+
+    let speed = player.body.velocity.getMagnitude();
+    if (speed > constants.PLAYER_SPEED_MAX) {
+        player.body.velocity.setMagnitude(constants.PLAYER_SPEED_MAX);
     }
 };
 
-
+/**
+ * Get the mouses rotation away from the baseline vector (1,0) and rotate the player graphic to that point.
+ * @param mouse
+ * @param player
+ */
 let rotatePlayerToMouse = (mouse, player) => {
     // *-1 because of Phaser's backwards rotations?
-    player.rotation = getMouseRotation(mouse.x, mouse.y) * -1;
+    player.rotation = getMouseRotation(mouse.x, mouse.y) * - 1;
 };
 
 {
@@ -59,7 +72,6 @@ let rotatePlayerToMouse = (mouse, player) => {
         if (bullet == null) return;
 
         let vec = getNormalizedMouseVector(mouse.x, mouse.y);
-
 
         bullet.reset(
             vec.x * constants.PLAYER_SHIP_DIAMETER / 2 * player.scale.x + player.body.x,
