@@ -7,6 +7,7 @@ import {getNormalizedMouseVector, getMouseRotation} from './math'
  * @param {Phaser.Game} game  A Phaser game object
  */
 let handleUserInput = (input, game) => {
+    if(!game.stash.player.alive) return;
     handlePlayerMovement(input.cursors, game.stash.player);
     rotatePlayerToMouse(input.mouse, game.stash.player);
     handlePlayerFire(game.time, input.mouse, game.stash.player, game.stash.playerBullets);

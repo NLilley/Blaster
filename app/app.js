@@ -26,8 +26,6 @@ function preload(game) {
 }
 
 function create(game) {
-
-    game.add.text(0, 0, 'Placeholder Text!', {fill: 'white'});
     //game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
     //game.input.onDown.add(()=> {
     //    (game.scale.isFullScreen) ? game.scale.stopFullScreen() : game.scale.startFullScreen(false);
@@ -101,7 +99,7 @@ function create(game) {
         enemy.addChild(enemyGraphic);
         enemy.addChild(enemyGraphicGun);
 
-        //enemy.kill();
+        enemy.kill();
     });
 
     game.stash.enemies = enemies; //TODO Adding to stash!
@@ -121,7 +119,12 @@ function create(game) {
     });
 
     game.stash.enemyBullets = enemyBullets; // TODO Adding to stash!
-
+    game.stash.playerScore = 0;
+    game.stash.playerScoreText = game.add.text(10, 10, `Score: ${game.stash.playerScore}`, {
+        fill: 'white',
+        font: '24px Arial'
+    });
+    game.stash.playerScoreText.fixedToCamera = true;
 
     game.camera.follow(player);
 }
@@ -129,10 +132,53 @@ function create(game) {
 function update(game) {
     handleUserInput(game.stash.input, game);
 
-    game.physics.arcade.collide(game.stash.playerBullets, game.stash.enemies, (bullet, enemy) => {
-        console.log('I have been hit!');
-        bullet.kill();
-        enemy.kill();
-    });
+    let player = game.stash.player;
+
+    let aliveEnemies = game.stash.enemies.children.filter(enemy => enemy.alive);
+
+    if (player.alive) {
+        //spawn enemies if there are too few
+        if (aliveEnemies.length < 1) {
+            let enemyToReset = game.stash.enemies.children[0];
+            enemyToReset.reset(player.x, player.y + 200);
+            enemyToReset.body.velocity.set(player.body.velocity.x, player.body.velocity.y);
+        }
+
+        //handle enemy movement and firing.
+        aliveEnemies.map(enemy => {
+            enemy.rotation = enemy.position.angle(player.position);
+
+            enemy.body.acceleration = Phaser.Point
+                .subtract(player.position, enemy.position)
+                .normalize()
+                .multiply(constants.ENEMY_ACCELLERATION, constants.ENEMY_ACCELLERATION);
+
+            if (enemy.body.velocity.getMagnitude() > constants.ENEMY_SPEED_MAX) {
+                enemy.body.velocity.setMagnitude(constants.ENEMY_SPEED_MAX);
+            }
+        });
+
+        game.physics.arcade.collide(game.stash.playerBullets, game.stash.enemies, (bullet, enemy) => {
+            bullet.kill();
+            enemy.kill();
+            game.stash.playerScore += 1;
+        });
+
+        game.physics.arcade.collide(game.stash.player, game.stash.enemies, (player, enemy) => {
+            player.kill();
+            enemy.kill();
+            game.add.text(player.position.x, player.position.y, 'GAME OVER!', {
+                fill: 'white',
+                font: '72px Arial'
+            }).anchor.set(0.5);
+        });
+    } else {
+        aliveEnemies.map(enemy => {
+            enemy.body.velocity.set(0, 0);
+            enemy.body.acceleration.set(0, 0)
+        })
+    }
+
+    game.stash.playerScoreText.text = `Score: ${game.stash.playerScore}`;
 }
 
