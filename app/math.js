@@ -15,4 +15,9 @@ let getNormalizedMouseVector = (x, y)=> {
     };
 }
 
+let getBulletVelocity = (target, shooter, bulletSpeed) => {
+
+
+};
+
 export {getMouseRotation, getNormalizedMouseVector}

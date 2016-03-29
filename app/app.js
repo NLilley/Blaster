@@ -49,7 +49,7 @@ function create(game) {
     game.stash.input = input; // TODO Adding to stash!
 
     // Create player sprite
-    let player = game.add.sprite(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT / 2);
+    let player = game.add.sprite(0, 0);
     game.physics.enable(player);
 
     let playerShip = game.add.graphics();
@@ -127,6 +127,24 @@ function create(game) {
     });
     game.stash.playerScoreText.fixedToCamera = true;
 
+    game.stash.gameOverText = game.add.text(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT / 2, 'GAME OVER!', {
+        fill: 'white',
+        font: '72px Arial'
+    });
+    game.stash.gameOverText.anchor.set(0.5);
+    game.stash.gameOverText.fixedToCamera = true;
+    game.stash.gameOverText.kill();
+
+    game.stash.resetText = game.add.text(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT - 20,
+        'Press space to restart!',
+        {
+            fill: 'white',
+            font: '24px Arial'
+        });
+    game.stash.resetText.anchor.set(0.5);
+    game.stash.resetText.fixedToCamera = true;
+    game.stash.resetText.kill();
+
     game.camera.follow(player);
 }
 
@@ -169,7 +187,8 @@ function update(game) {
                     bullet.body.velocity = normalToPlayer
                         .clone()
                         .multiply(constants.ENEMY_BULLET_SPEED, constants.ENEMY_BULLET_SPEED)
-                        .add(enemy.body.velocity.x, enemy.body.velocity.y);
+                        .add(player.body.velocity.x, player.body.velocity.y);
+                    bullet.lifespan = constants.ENEMY_BULLET_TIME_TO_LIVE;
                     enemy.lastFired = game.time.now;
                 }
             }
@@ -182,11 +201,10 @@ function update(game) {
         });
 
         let gameOver = () => {
-            game.add.text(player.position.x, player.position.y, 'GAME OVER!', {
-                fill: 'white',
-                font: '72px Arial'
-            }).anchor.set(0.5);
+            game.stash.gameOverText.reset();
+            game.stash.resetText.reset();
         };
+
 
         game.physics.arcade.collide(game.stash.player, game.stash.enemies, (player, enemy) => {
             player.kill();
@@ -203,7 +221,23 @@ function update(game) {
         aliveEnemies.map(enemy => {
             enemy.body.velocity.set(0, 0);
             enemy.body.acceleration.set(0, 0)
-        })
+        });
+
+        let reset = () => {
+            game.stash.gameOverText.kill();
+            game.stash.resetText.kill();
+            game.stash.player.reset(0, 0);
+            game.stash.playerScore = 0;
+            game.stash.enemies.children.map(enemy => {
+                enemy.kill();
+                enemy.lastFired = game.time.now;
+            });
+            game.stash.enemyBullets.children.map(bullet => bullet.kill());
+        };
+
+        if (game.stash.input.space.isDown) {
+            reset();
+        }
     }
 
     game.stash.playerScoreText.text = `Score: ${game.stash.playerScore}`;

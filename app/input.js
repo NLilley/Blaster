@@ -7,7 +7,7 @@ import {getNormalizedMouseVector, getMouseRotation} from './math'
  * @param {Phaser.Game} game  A Phaser game object
  */
 let handleUserInput = (input, game) => {
-    if(!game.stash.player.alive) return;
+    if (!game.stash.player.alive) return;
     handlePlayerMovement(input.cursors, game.stash.player);
     rotatePlayerToMouse(input.mouse, game.stash.player);
     handlePlayerFire(game.time, input.mouse, game.stash.player, game.stash.playerBullets);
@@ -19,8 +19,6 @@ let handleUserInput = (input, game) => {
  * @param player  The sprite object representing the player
  */
 let handlePlayerMovement = (cursors, player) => {
-    // TODO Use accessleration instead of velocity!
-
     let x = 0;
     let y = 0;
 
@@ -54,14 +52,11 @@ let handlePlayerMovement = (cursors, player) => {
  */
 let rotatePlayerToMouse = (mouse, player) => {
     // *-1 because of Phaser's backwards rotations?
-    player.rotation = getMouseRotation(mouse.x, mouse.y) * - 1;
+    player.rotation = getMouseRotation(mouse.x, mouse.y) * -1;
 };
 
 {
     let lastPlayerFire = 0;
-    let cleanUpBullet = bullet => {
-        bullet.kill();
-    };
 
     var handlePlayerFire = (time, mouse, player, playerBullets) => {
         let currentTime = time.now;
@@ -81,9 +76,8 @@ let rotatePlayerToMouse = (mouse, player) => {
 
         bullet.body.velocity.x = player.body.velocity.x + constants.PLAYER_BULLET_SPEED * vec.x;
         bullet.body.velocity.y = player.body.velocity.y + constants.PLAYER_BULLET_SPEED * vec.y * -1;
+        bullet.lifespan = constants.PLAYER_BULLET_TIME_TO_LIVE;
 
-        // TODO Maybe clean up bullets in update loop instead?  Will need to track created time though!
-        time.events.add(constants.PLAYER_BULLET_TIME_TO_LIVE, cleanUpBullet, null, bullet);
         lastPlayerFire = currentTime;
 
     };
