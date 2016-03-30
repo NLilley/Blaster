@@ -1,5 +1,6 @@
 import * as constants from './constants';
 import {getNormalizedMouseVector, getMouseRotation} from './math'
+import {accelerate, capSpeed, fireWeapon} from './action'
 
 /**
  * Given a keys and the game object, respond to user input.
@@ -21,30 +22,17 @@ let handleUserInput = (input, game, player, playerBullets) => {
  * @param player  The sprite object representing the player
  */
 let handlePlayerMovement = (cursors, player) => {
-    let x = 0;
-    let y = 0;
+    let direction = new Phaser.Point(0, 0);
 
-    if (cursors.up.isDown || cursors.w.isDown) y--;
-    if (cursors.down.isDown || cursors.s.isDown) y++;
-    if (cursors.left.isDown || cursors.a.isDown) x--;
-    if (cursors.right.isDown || cursors.d.isDown) x++;
+    if (cursors.up.isDown || cursors.w.isDown) direction.y--;
+    if (cursors.down.isDown || cursors.s.isDown) direction.y++;
+    if (cursors.left.isDown || cursors.a.isDown) direction.x--;
+    if (cursors.right.isDown || cursors.d.isDown) direction.x++;
 
-    if (Math.abs(x) + Math.abs(y) == 2) {
-        player.body.acceleration.set(
-            x * constants.DIAGONAL_MOVEMENT_MULTIPLIER * constants.PLAYER_ACCELERATION,
-            y * constants.DIAGONAL_MOVEMENT_MULTIPLIER * constants.PLAYER_ACCELERATION
-        );
-    } else {
-        player.body.acceleration.set(
-            x * constants.PLAYER_ACCELERATION,
-            y * constants.PLAYER_ACCELERATION
-        );
-    }
+    direction.normalize();
 
-    let speed = player.body.velocity.getMagnitude();
-    if (speed > constants.PLAYER_SPEED_MAX) {
-        player.body.velocity.setMagnitude(constants.PLAYER_SPEED_MAX);
-    }
+    accelerate(player, direction, constants.PLAYER_ACCELERATION);
+    capSpeed(player, constants.PLAYER_SPEED_MAX);
 };
 
 /**
@@ -53,36 +41,15 @@ let handlePlayerMovement = (cursors, player) => {
  * @param player
  */
 let rotatePlayerToMouse = (mouse, player) => {
-    // *-1 because of Phaser's backwards rotations?
-    player.rotation = getMouseRotation(mouse.x, mouse.y) * -1;
+    player.rotation = getMouseRotation(mouse.x, mouse.y);
 };
 
-{
-    let lastPlayerFire = 0;
 
-    var handlePlayerFire = (time, mouse, player, playerBullets) => {
-        let currentTime = time.now;
+let handlePlayerFire = (time, mouse, player, playerBullets) => {
+    if (mouse.isUp) return;
+    let vec = getNormalizedMouseVector(mouse.x, mouse.y);
+    fireWeapon(player, vec, playerBullets, time.now);
+};
 
-        if (mouse.isUp) return;
-        if (currentTime - lastPlayerFire <= constants.PLAYER_FIRE_RATE) return;
-
-        let bullet = playerBullets.children.find(bullet => !bullet.alive);
-        if (bullet == null) return;
-
-        let vec = getNormalizedMouseVector(mouse.x, mouse.y);
-
-        bullet.reset(
-            vec.x * constants.PLAYER_SHIP_DIAMETER / 2 * player.scale.x + player.body.x,
-            vec.y * -1 * constants.PLAYER_SHIP_DIAMETER / 2 * player.scale.y + player.body.y
-        );
-
-        bullet.body.velocity.x = player.body.velocity.x + constants.PLAYER_BULLET_SPEED * vec.x;
-        bullet.body.velocity.y = player.body.velocity.y + constants.PLAYER_BULLET_SPEED * vec.y * -1;
-        bullet.lifespan = constants.PLAYER_BULLET_TIME_TO_LIVE;
-
-        lastPlayerFire = currentTime;
-
-    };
-}
 
 export {handleUserInput}

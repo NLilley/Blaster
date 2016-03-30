@@ -8,7 +8,9 @@
 import * as constants from './constants'
 import _ from 'lodash'
 import {handleUserInput} from './input'
-import {createPlayer, createEnemy} from './unit'
+import {createBullet, createPlayer, createEnemy} from './unit'
+import {accelerate, capSpeed, fireWeapon} from './action'
+
 
 export {create, update};
 
@@ -26,15 +28,15 @@ let playerBullets;
 let input;
 
 /**
- *  Create callback used to initialize Phaser game.  This will set up
- *  all of the required state to start the game.
+ * Create callback used to initialize Phaser game.  This will set up
+ * all of the required state to start the game.
  * @param {Phaser.Game} game The game object which we wish to initialize
  */
 function create(game) {
     initializeGameSystems(game);
     initializeInput(game);
     initializeStateVariables(game);
-    initializeTextObjects(game, playerScore);
+    initializeTextObjects(game);
     initializePlayerObjects(game);
     initializeEnemyObjects(game);
 }
@@ -87,8 +89,7 @@ let initializeStateVariables = game => {
     playerScore = 0;
 };
 
-let initializeTextObjects = (game, playerScore) => {
-
+let initializeTextObjects = (game) => {
     playerScoreText = game.add.text(10, 10, '', {
         fill: 'white',
         font: '24px Arial'
@@ -116,68 +117,30 @@ let initializeTextObjects = (game, playerScore) => {
 
 let initializePlayerObjects = game => {
     player = createPlayer(game);
-
-    let playerShip = game.add.graphics();
-    playerShip.lineStyle(3, 0xffffff, 1);
-    playerShip.beginFill(0x00eeee, 1);
-    playerShip.drawCircle(0, 0, constants.PLAYER_SHIP_DIAMETER);
-    player.addChild(playerShip);
-
-    let playerGun = game.add.graphics();
-    playerGun.beginFill(0xffffff, 1);
-    playerGun.drawRect(12, -4, 24, 8);
-    player.addChild(playerGun);
+    game.camera.follow(player);
 
     playerBullets = game.add.group();
+
     _.range(constants.PLAYER_BULLET_AMOUNT).map(() => {
-        let bullet = game.add.sprite(0, 0, null, 0, playerBullets);
-        game.physics.arcade.enable(bullet);
-
-        let bulletGraphic = game.add.graphics();
-        bulletGraphic.lineStyle(1, 0xffffff, 1);
-        bulletGraphic.beginFill(0x00eeee, 1);
-        bulletGraphic.drawCircle(0, 0, 16);
-        bullet.addChild(bulletGraphic);
-
+        let bullet = createBullet(game, 16, 0x00eeee);
         bullet.kill();
+        playerBullets.add(bullet);
     });
 };
 
 let initializeEnemyObjects = game => {
     enemies = game.add.group();
     _.range(constants.ENEMY_AMOUNT_MAX).map(()=> {
-        let enemy = game.add.sprite(0, 0, null, 0, enemies);
-
-        game.physics.arcade.enable(enemy);
-        enemy.lastFired = 0; // TODO Also storing fire information on a sprite.  Abstract this out!
-
-        let enemyGraphic = game.add.graphics();
-        enemyGraphic.lineStyle(2, 0xffffff, 1);
-        enemyGraphic.beginFill(0xff0000, 1);
-        enemyGraphic.drawCircle(0, 0, constants.ENEMY_SHIP_DIAMETER);
-
-        let enemyGraphicGun = game.add.graphics();
-        enemyGraphicGun.beginFill(0xffffff, 1);
-        enemyGraphicGun.drawRect(constants.ENEMY_SHIP_DIAMETER * 0.333, -3, constants.ENEMY_SHIP_DIAMETER * 0.5, 6)
-
-        enemy.addChild(enemyGraphic);
-        enemy.addChild(enemyGraphicGun);
-
+        let enemy = createEnemy(game);
         enemy.kill();
+        enemies.add(enemy);
     });
 
     enemyBullets = game.add.group();
     _.range(constants.ENEMY_BULLET_AMOUNT).map(()=> {
-        let bullet = game.add.sprite(0, 0, null, 0, enemyBullets);
-        game.physics.arcade.enable(bullet);
-
-        let bulletGraphic = game.add.graphics();
-        bulletGraphic.lineStyle(1, 0xffffff, 1);
-        bulletGraphic.beginFill(0xff0000, 1);
-        bulletGraphic.drawCircle(0, 0, 12);
-        bullet.addChild(bulletGraphic);
-
+        let bullet = createBullet(game, 12, 0xff0000);
         bullet.kill();
+        enemyBullets.add(bullet);
     });
 };
 
@@ -203,26 +166,11 @@ let ai = (game, enemies) => {
             .subtract(player.position, enemy.position)
             .normalize();
 
-        enemy.body.acceleration = normalToPlayer
-            .clone()
-            .multiply(constants.ENEMY_ACCELERATION, constants.ENEMY_ACCELERATION);
+        accelerate(enemy, normalToPlayer, constants.ENEMY_ACCELERATION);
+        capSpeed(enemy, constants.ENEMY_SPEED_MAX);
 
-        if (enemy.body.velocity.getMagnitude() > constants.ENEMY_SPEED_MAX) {
-            enemy.body.velocity.setMagnitude(constants.ENEMY_SPEED_MAX);
-        }
-
-        if (enemy.position.distance(player.position) < constants.ENEMY_FIRE_RANGE &&
-            game.time.now - enemy.lastFired > constants.ENEMY_FIRE_RATE) {
-            let bullet = enemyBullets.children.find(bullet => !bullet.alive);
-            if (bullet != null) {
-                bullet.reset(enemy.position.x, enemy.position.y);
-                bullet.body.velocity = normalToPlayer
-                    .clone()
-                    .multiply(constants.ENEMY_BULLET_SPEED, constants.ENEMY_BULLET_SPEED)
-                    .add(player.body.velocity.x, player.body.velocity.y);
-                bullet.lifespan = constants.ENEMY_BULLET_TIME_TO_LIVE;
-                enemy.lastFired = game.time.now;
-            }
+        if (enemy.position.distance(player.position) < constants.ENEMY_FIRE_RANGE ) {
+            fireWeapon(enemy, normalToPlayer, enemyBullets, game.time.now);
         }
     });
 };
@@ -264,7 +212,7 @@ let resetGame = game => {
     playerScore = 0;
     enemies.children.map(enemy => {
         enemy.kill();
-        enemy.lastFired = game.time.now;
+        enemy.c.lastFired = game.time.now;
     });
     enemyBullets.children.map(bullet => bullet.kill());
     playerBullets.children.map(bullet => bullet.kill());

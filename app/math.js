@@ -3,7 +3,7 @@ import * as constants from './constants'
 let getNormalizedMouseVector = (x, y)=> {
     return new Phaser.Point(
         x - constants.GAME_WIDTH / 2,
-        (y - constants.GAME_HEIGHT / 2) * -1
+        (y - constants.GAME_HEIGHT / 2)
     ).normalize();
 };
 
