@@ -25,3 +25,6 @@ export const ENEMY_FIRE_RANGE = 300;
 export const ENEMY_FIRE_RATE = 1000;
 export const ENEMY_SHIP_DIAMETER = 32;
 export const ENEMY_SPAWN_RATE = 1000;
+
+export const WORLD_BLOCK_WIDTH = 1000;
+export const WORLD_BLOCK_HEIGHT = 1000;

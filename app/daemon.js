@@ -33,6 +33,7 @@ let input;
  * @param {Phaser.Game} game The game object which we wish to initialize
  */
 function create(game) {
+    game.stage.backgroundColor = '#0c0020';
     initializeGameSystems(game);
     initializeInput(game);
     initializeStateVariables(game);
@@ -66,12 +67,15 @@ function update(game) {
         }
     }
     playerScoreText.text = `Score: ${playerScore}`;
+
+    paintBlocks(game, getBlocksToPaint(game, player));
 }
 
 let initializeGameSystems = game => {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.camera.bounds = null;
     game.renderer.renderSession.roundPixels = true;
+
 };
 
 let initializeInput = game => {
@@ -169,7 +173,7 @@ let ai = (game, enemies) => {
         accelerate(enemy, normalToPlayer, constants.ENEMY_ACCELERATION);
         capSpeed(enemy, constants.ENEMY_SPEED_MAX);
 
-        if (enemy.position.distance(player.position) < constants.ENEMY_FIRE_RANGE ) {
+        if (enemy.position.distance(player.position) < constants.ENEMY_FIRE_RANGE) {
             fireWeapon(enemy, normalToPlayer, enemyBullets, game.time.now);
         }
     });
@@ -217,4 +221,74 @@ let resetGame = game => {
     enemyBullets.children.map(bullet => bullet.kill());
     playerBullets.children.map(bullet => bullet.kill());
 
+};
+
+
+// TODO Begin with the unit testing!
+let worldBlocks = {};
+
+let paintBlocks = (game, blocks) => {
+    blocks.map(block => {
+        worldBlocks[convertBlockToKey(block)] = true;
+
+        let blockGraphics = game.add.graphics();
+
+        //Draw stars
+        _.range(game.rnd.integerInRange(5, 20)).map(()=> {
+            blockGraphics.beginFill(0xffffff);
+            blockGraphics.drawCircle(
+                block.x * constants.WORLD_BLOCK_WIDTH + game.rnd.integerInRange(0, constants.WORLD_BLOCK_WIDTH),
+                block.y * constants.WORLD_BLOCK_HEIGHT + game.rnd.integerInRange(0, constants.WORLD_BLOCK_HEIGHT),
+                game.rnd.integerInRange(2, 9)
+            );
+            blockGraphics.endFill();
+        });
+
+        //Draw planets
+        _.range(game.rnd.integerInRange(1, 4)).map(() => {
+            blockGraphics.beginFill(Phaser.Color.getRandomColor(100));
+            blockGraphics.drawCircle(
+                block.x * constants.WORLD_BLOCK_WIDTH + game.rnd.integerInRange(0, constants.WORLD_BLOCK_WIDTH),
+                block.y * constants.WORLD_BLOCK_HEIGHT + game.rnd.integerInRange(0, constants.WORLD_BLOCK_HEIGHT),
+                game.rnd.integerInRange(80, 320));
+            blockGraphics.endFill();
+        });
+
+        game.world.sendToBack(blockGraphics);
+
+    });
+};
+
+let getBlocksToPaint = (game, player) => {
+    let blocksToPaint = [];
+    let currentBlock = getCurrentBlock(player);
+    for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+            let testBlock = {
+                x: currentBlock.x + i,
+                y: currentBlock.y + j
+            };
+            if (worldBlocks[convertBlockToKey(testBlock)] == null) {
+                blocksToPaint.push(testBlock);
+            }
+        }
+    }
+    return blocksToPaint;
+};
+
+let getCurrentBlock = (unit) => {
+    let x = Math.floor(unit.position.x / constants.WORLD_BLOCK_WIDTH);
+    let y = Math.floor(unit.position.y / constants.WORLD_BLOCK_HEIGHT);
+    return {x, y};
+};
+
+let convertBlockToKey = (block) => {
+    return `${block.x},${block.y}`;
+};
+
+let convertKeyToBlock = (key) => {
+    let [x, y] = key.split(',');
+    x = parseInt(x, 10);
+    y = parseInt(y, 10);
+    return {x, y};
 };
