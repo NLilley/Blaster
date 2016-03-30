@@ -5,12 +5,14 @@ import {getNormalizedMouseVector, getMouseRotation} from './math'
  * Given a keys and the game object, respond to user input.
  * @param {Object} input  An object filled with Phaser.js keys that can be checked to determine user input
  * @param {Phaser.Game} game  A Phaser game object
+ * @param player The player game object
+ * @param playerBullets The player bullets object
  */
-let handleUserInput = (input, game) => {
-    if (!game.stash.player.alive) return;
-    handlePlayerMovement(input.cursors, game.stash.player);
-    rotatePlayerToMouse(input.mouse, game.stash.player);
-    handlePlayerFire(game.time, input.mouse, game.stash.player, game.stash.playerBullets);
+let handleUserInput = (input, game, player, playerBullets) => {
+    if (!player.alive) return;
+    handlePlayerMovement(input.cursors, player);
+    rotatePlayerToMouse(input.mouse, player);
+    handlePlayerFire(game.time, input.mouse, player, playerBullets);
 };
 
 /**
