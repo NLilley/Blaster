@@ -25,5 +25,9 @@ Phaser.Group.prototype.find = function find(fn){
     return this.children.find(fn);
 };
 
+Phaser.Group.prototype.filter = function(fn){
+    return this.children.filter(fn);
+};
+
 function preload(game) {
 }

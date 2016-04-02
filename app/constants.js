@@ -28,3 +28,7 @@ export const ENEMY_SHIP_BASE_COLOR = 0xff0000;
 
 export const WORLD_BLOCK_WIDTH = 1000;
 export const WORLD_BLOCK_HEIGHT = 1000;
+
+export const INDICATOR_RADIUS = (Math.max(GAME_WIDTH, GAME_HEIGHT) / 2) - 115;
+
+export const ZERO_VECTOR = new Phaser.Point(0, 0);

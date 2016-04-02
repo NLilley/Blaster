@@ -84,10 +84,10 @@ let createIndicator = (game, color) => {
     let sprite = game.add.sprite(0, 0);
     let indicator = game.add.graphics();
 
-    indicator.lineStyle(8, color, 1);
-    indicator.moveTo(-18, 28);
-    indicator.lineTo(0, 0);
-    indicator.lineTo(18, 28);
+    indicator.lineStyle(8, color, 0.6);
+    indicator.moveTo(-14, -18);
+    indicator.lineTo(14, 0);
+    indicator.lineTo(-14, 18);
 
     sprite.addChild(indicator);
     return sprite;

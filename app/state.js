@@ -14,7 +14,6 @@ let lastTimeEnemyAdded = 0;
 var state = (game, aliveEnemies, enemies, player, indicators) => {
     spawnEnemies(game, aliveEnemies, enemies, player);
     updateIndicators(game, player, enemies, indicators);
-
 };
 
 /**
@@ -42,35 +41,68 @@ let spawnEnemies = (game, aliveEnemies, enemies, player) => {
  * @param {Phaser.Game} game Phaser game object
  * @param player Player game object
  * @param {Phaser.Group} enemies Phaser group of enemies to indicate for
- * @param {Phaser.Group} indicators Phaser group of indicators to use.
  */
-let updateIndicators = (game, player, enemies, indicators) => {
+let updateIndicators = (game, player, enemies) => {
     enemies.map(enemy => {
-        if(shouldPlaceIndicator(enemy, game.camera)){
-            placeIndicator();
+        if (!enemy.alive) {
+            removeIndicator(enemy);
+            return;
         }
-    })
+
+        if (shouldDisplayIndicator(enemy, game.camera)) {
+            if(!enemy.c.indicator.alive) placeIndicator(enemy);
+            positionIndicator(player, enemy);
+        } else {
+            removeIndicator(enemy)
+        }
+    });
 };
 
 /**
  * Place an indicator in the camera view so that the player can see enemies that are off screen.
- * @param game
- * @param player
- * @param enemy
- * @param indicator
+ * @param enemy Enemy to place an indicator for
  */
-let placeIndicator = (game, player, enemy, indicator) => {
+let placeIndicator = (enemy) => {
+    enemy.c.indicator.reset(enemy.position.x, enemy.position.y);
+};
 
+/**
+ * Remove indicator from the world
+ * @param enemy Enemy with indicator
+ */
+let removeIndicator = enemy => {
+    enemy.c.indicator.kill();
 };
 
 /**
  * Determine if an indicator should be placed for an enemy unit.
- * @param {Phaser.Camera} camera Phaser camera
  * @param enemy Enemy to check
+ * @param {Phaser.Camera} camera Phaser camera
  * @return Boolean
  */
-let shouldPlaceIndicator = (camera, enemy) => {
+let shouldDisplayIndicator = (enemy, camera) => {
     return !inCamera(enemy, camera);
+};
+
+/**
+ * Position an indicator so that it is on the edge of the players camera
+ * @param player The player who should have an indicator positioned for them.
+ * @param enemy The enemy which the indicator represents.
+ */
+let positionIndicator = (player, enemy) => {
+    let directionVector = new Phaser.Point(
+        enemy.position.x - player.position.x,
+        enemy.position.y - player.position.y
+    ).normalize();
+
+    enemy.c.indicator.rotation = constants.ZERO_VECTOR.angle(directionVector);
+
+    enemy.c.indicator.position = directionVector
+        .multiply(constants.INDICATOR_RADIUS, constants.INDICATOR_RADIUS)
+        .add(
+            player.position.x,
+            player.position.y
+        );
 };
 
 

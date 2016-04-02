@@ -26,11 +26,12 @@ let getBulletVelocity = (target, shooter, bulletSpeed) => {
  * @param camera The camera
  */
 let inCamera = (target, camera) => {
-    if (target.x >= camera.x &&
-        target.x <= camera.x + camera.width &&
-        target.y >= camera.y &&
-        target.y <= camera.y + camera.height)
+    if (target.position.x >= camera.x &&
+        target.position.x <= camera.x + camera.width &&
+        target.position.y >= camera.y &&
+        target.position.y <= camera.y + camera.height) {
         return true;
+    }
     return false;
 };
 

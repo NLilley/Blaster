@@ -25,7 +25,6 @@ let resetText;
 
 let enemies;
 let enemyBullets;
-let enemyIndicators;
 
 let player;
 let playerBullets;
@@ -58,7 +57,7 @@ function update(game) {
 
     if (player.alive) {
         handleUserInput(input, game, player, playerBullets);
-        state(game, aliveEnemies, enemies, player, enemyIndicators);
+        state(game, aliveEnemies, enemies, player);
         ai(game, aliveEnemies, player, enemyBullets);
         physics(game);
         paintWorld(game, player);
@@ -141,6 +140,11 @@ let initializeEnemyObjects = game => {
         let enemy = createEnemy(game);
         enemy.kill();
         enemies.add(enemy);
+
+        let indicator = createIndicator(game, constants.ENEMY_SHIP_BASE_COLOR);
+        indicator.kill();
+
+        enemy.c.indicator = indicator;
     });
 
     enemyBullets = game.add.group();
@@ -148,13 +152,6 @@ let initializeEnemyObjects = game => {
         let bullet = createBullet(game, 12, constants.ENEMY_SHIP_BASE_COLOR);
         bullet.kill();
         enemyBullets.add(bullet);
-    });
-
-    enemyIndicators = game.add.group();
-    _.range(constants.ENEMY_AMOUNT_MAX).map(() => {
-        let indicator = createIndicator(game, constants.ENEMY_SHIP_BASE_COLOR);
-        indicator.kill();
-        enemyIndicators.add(indicator);
     });
 };
 
