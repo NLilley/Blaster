@@ -8,8 +8,11 @@
 import * as constants from './constants'
 import _ from 'lodash'
 import {handleUserInput} from './input'
-import {createBullet, createPlayer, createEnemy} from './unit'
+import {createBullet, createPlayer, createEnemy, createIndicator} from './unit'
 import {accelerate, capSpeed, fireWeapon} from './action'
+import {ai} from './ai'
+import {paintWorld} from './world'
+import {state} from './state'
 
 
 export {create, update};
@@ -22,6 +25,8 @@ let resetText;
 
 let enemies;
 let enemyBullets;
+let enemyIndicators;
+
 let player;
 let playerBullets;
 
@@ -53,9 +58,11 @@ function update(game) {
 
     if (player.alive) {
         handleUserInput(input, game, player, playerBullets);
-        state(game, aliveEnemies);
-        ai(game, aliveEnemies);
+        state(game, aliveEnemies, enemies, player, enemyIndicators);
+        ai(game, aliveEnemies, player, enemyBullets);
         physics(game);
+        paintWorld(game, player);
+        playerScoreText.text = `Score: ${playerScore}`;
 
     } else {
         aliveEnemies.map(enemy => {
@@ -66,16 +73,12 @@ function update(game) {
             resetGame(game);
         }
     }
-    playerScoreText.text = `Score: ${playerScore}`;
-
-    paintBlocks(game, getBlocksToPaint(game, player));
 }
 
 let initializeGameSystems = game => {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.camera.bounds = null;
     game.renderer.renderSession.roundPixels = true;
-
 };
 
 let initializeInput = game => {
@@ -126,7 +129,7 @@ let initializePlayerObjects = game => {
     playerBullets = game.add.group();
 
     _.range(constants.PLAYER_BULLET_AMOUNT).map(() => {
-        let bullet = createBullet(game, 16, 0x00eeee);
+        let bullet = createBullet(game, 16, constants.PLAYER_SHIP_BASE_COLOR);
         bullet.kill();
         playerBullets.add(bullet);
     });
@@ -142,40 +145,16 @@ let initializeEnemyObjects = game => {
 
     enemyBullets = game.add.group();
     _.range(constants.ENEMY_BULLET_AMOUNT).map(()=> {
-        let bullet = createBullet(game, 12, 0xff0000);
+        let bullet = createBullet(game, 12, constants.ENEMY_SHIP_BASE_COLOR);
         bullet.kill();
         enemyBullets.add(bullet);
     });
-};
 
-{
-    let lastTimeEnemyAdded = 0;
-    var state = (game, aliveEnemies) => {
-        if (aliveEnemies.length < constants.ENEMY_AMOUNT_MAX &&
-            game.time.now - lastTimeEnemyAdded > constants.ENEMY_SPAWN_RATE) {
-            let enemyToReset = enemies.children.find(enemy => !enemy.alive);
-            let spawnPoint = new Phaser.Point(500, 0);
-            spawnPoint.rotate(0, 0, game.rnd.integerInRange(0, 360), true);
-            enemyToReset.reset(player.x + spawnPoint.x, player.y + spawnPoint.y);
-            lastTimeEnemyAdded = game.time.now;
-        }
-    };
-}
-
-let ai = (game, enemies) => {
-    enemies.map(enemy => {
-        enemy.rotation = enemy.position.angle(player.position);
-
-        let normalToPlayer = Phaser.Point
-            .subtract(player.position, enemy.position)
-            .normalize();
-
-        accelerate(enemy, normalToPlayer, constants.ENEMY_ACCELERATION);
-        capSpeed(enemy, constants.ENEMY_SPEED_MAX);
-
-        if (enemy.position.distance(player.position) < constants.ENEMY_FIRE_RANGE) {
-            fireWeapon(enemy, normalToPlayer, enemyBullets, game.time.now);
-        }
+    enemyIndicators = game.add.group();
+    _.range(constants.ENEMY_AMOUNT_MAX).map(() => {
+        let indicator = createIndicator(game, constants.ENEMY_SHIP_BASE_COLOR);
+        indicator.kill();
+        enemyIndicators.add(indicator);
     });
 };
 
@@ -221,74 +200,4 @@ let resetGame = game => {
     enemyBullets.children.map(bullet => bullet.kill());
     playerBullets.children.map(bullet => bullet.kill());
 
-};
-
-
-// TODO Begin with the unit testing!
-let worldBlocks = {};
-
-let paintBlocks = (game, blocks) => {
-    blocks.map(block => {
-        worldBlocks[convertBlockToKey(block)] = true;
-
-        let blockGraphics = game.add.graphics();
-
-        //Draw stars
-        _.range(game.rnd.integerInRange(5, 20)).map(()=> {
-            blockGraphics.beginFill(0xffffff);
-            blockGraphics.drawCircle(
-                block.x * constants.WORLD_BLOCK_WIDTH + game.rnd.integerInRange(0, constants.WORLD_BLOCK_WIDTH),
-                block.y * constants.WORLD_BLOCK_HEIGHT + game.rnd.integerInRange(0, constants.WORLD_BLOCK_HEIGHT),
-                game.rnd.integerInRange(2, 9)
-            );
-            blockGraphics.endFill();
-        });
-
-        //Draw planets
-        _.range(game.rnd.integerInRange(1, 4)).map(() => {
-            blockGraphics.beginFill(Phaser.Color.getRandomColor(100));
-            blockGraphics.drawCircle(
-                block.x * constants.WORLD_BLOCK_WIDTH + game.rnd.integerInRange(0, constants.WORLD_BLOCK_WIDTH),
-                block.y * constants.WORLD_BLOCK_HEIGHT + game.rnd.integerInRange(0, constants.WORLD_BLOCK_HEIGHT),
-                game.rnd.integerInRange(80, 320));
-            blockGraphics.endFill();
-        });
-
-        game.world.sendToBack(blockGraphics);
-
-    });
-};
-
-let getBlocksToPaint = (game, player) => {
-    let blocksToPaint = [];
-    let currentBlock = getCurrentBlock(player);
-    for (let i = -1; i < 2; i++) {
-        for (let j = -1; j < 2; j++) {
-            let testBlock = {
-                x: currentBlock.x + i,
-                y: currentBlock.y + j
-            };
-            if (worldBlocks[convertBlockToKey(testBlock)] == null) {
-                blocksToPaint.push(testBlock);
-            }
-        }
-    }
-    return blocksToPaint;
-};
-
-let getCurrentBlock = (unit) => {
-    let x = Math.floor(unit.position.x / constants.WORLD_BLOCK_WIDTH);
-    let y = Math.floor(unit.position.y / constants.WORLD_BLOCK_HEIGHT);
-    return {x, y};
-};
-
-let convertBlockToKey = (block) => {
-    return `${block.x},${block.y}`;
-};
-
-let convertKeyToBlock = (key) => {
-    let [x, y] = key.split(',');
-    x = parseInt(x, 10);
-    y = parseInt(y, 10);
-    return {x, y};
 };

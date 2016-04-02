@@ -80,4 +80,17 @@ let createWeapon = (bulletSpeed, bulletLifespan, fireRate) => {
     }
 };
 
-export {createPlayer, createEnemy, createBullet}
+let createIndicator = (game, color) => {
+    let sprite = game.add.sprite(0, 0);
+    let indicator = game.add.graphics();
+
+    indicator.lineStyle(8, color, 1);
+    indicator.moveTo(-18, 28);
+    indicator.lineTo(0, 0);
+    indicator.lineTo(18, 28);
+
+    sprite.addChild(indicator);
+    return sprite;
+};
+
+export {createPlayer, createEnemy, createBullet, createIndicator}

@@ -20,4 +20,18 @@ let getBulletVelocity = (target, shooter, bulletSpeed) => {
 
 };
 
-export {getMouseRotation, getNormalizedMouseVector}
+/**
+ * Check if the target is within the camera specified.
+ * @param target Target to check
+ * @param camera The camera
+ */
+let inCamera = (target, camera) => {
+    if (target.x >= camera.x &&
+        target.x <= camera.x + camera.width &&
+        target.y >= camera.y &&
+        target.y <= camera.y + camera.height)
+        return true;
+    return false;
+};
+
+export {getMouseRotation, getNormalizedMouseVector, inCamera}
