@@ -1,4 +1,9 @@
+/**
+ * World.js Functions defined here are responsible for creating the world that will be drawn forthe user.
+ */
+
 import * as constants from './constants'
+
 
 let worldBlocks = {};
 
@@ -84,3 +89,4 @@ let convertKeyToBlock = (key) => {
 };
 
 export{paintWorld};
+

@@ -1,4 +1,9 @@
+/**
+ * Math.js Reusable mathematical functions for performing game calculations
+ */
+
 import * as constants from './constants'
+
 
 let getNormalizedMouseVector = (x, y)=> {
     return new Phaser.Point(
@@ -16,7 +21,6 @@ let getNormalizedMouseVector = (x, y)=> {
 }
 
 let getBulletVelocity = (target, shooter, bulletSpeed) => {
-
 
 };
 

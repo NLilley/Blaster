@@ -1,3 +1,7 @@
+/**
+ * Input.js Detect and respond to user input
+ */
+
 import * as constants from './constants';
 import {getNormalizedMouseVector, getMouseRotation} from './math'
 import {accelerate, capSpeed, fireWeapon} from './action'

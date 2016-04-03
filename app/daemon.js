@@ -1,5 +1,5 @@
 /**
- * The daemon object is responsible for the creation and maintenance and fulfilment
+ * Daemon.js    The daemon object is responsible for the creation and maintenance and fulfilment
  * of game related activities.  As this is used in conjunction with the Phaser library,
  * it must expose functions that can be called by the create and update methods of the
  * Phaser.Game object.
@@ -13,9 +13,7 @@ import {accelerate, capSpeed, fireWeapon} from './action'
 import {ai} from './ai'
 import {paintWorld} from './world'
 import {state} from './state'
-
-
-export {create, update};
+import {loadSound, initializeSound, explosionSFX} from './sound'
 
 let playerScore;
 
@@ -32,12 +30,21 @@ let playerBullets;
 let input;
 
 /**
+ * Load assets required by the game
+ * @param {Phaser.Game} game Phaser game object
+ */
+function preload(game) {
+    loadSound(game);
+}
+
+/**
  * Create callback used to initialize Phaser game.  This will set up
  * all of the required state to start the game.
  * @param {Phaser.Game} game The game object which we wish to initialize
  */
 function create(game) {
     game.stage.backgroundColor = '#0c0020';
+    initializeSound(game);
     initializeGameSystems(game);
     initializeInput(game);
     initializeStateVariables(game);
@@ -126,9 +133,8 @@ let initializePlayerObjects = game => {
     game.camera.follow(player);
 
     playerBullets = game.add.group();
-
     _.range(constants.PLAYER_BULLET_AMOUNT).map(() => {
-        let bullet = createBullet(game, 16, constants.PLAYER_SHIP_BASE_COLOR);
+        let bullet = createBullet(game, constants.PLAYER_BULLET_DIAMETER, constants.PLAYER_SHIP_BASE_COLOR);
         bullet.kill();
         playerBullets.add(bullet);
     });
@@ -149,7 +155,7 @@ let initializeEnemyObjects = game => {
 
     enemyBullets = game.add.group();
     _.range(constants.ENEMY_BULLET_AMOUNT).map(()=> {
-        let bullet = createBullet(game, 12, constants.ENEMY_SHIP_BASE_COLOR);
+        let bullet = createBullet(game, constants.ENEMY_BULLET_DIAMETER, constants.ENEMY_SHIP_BASE_COLOR);
         bullet.kill();
         enemyBullets.add(bullet);
     });
@@ -165,23 +171,27 @@ let physics = game => {
         bullet.kill();
         enemy.kill();
         playerScore += 1;
+        explosionSFX.play();
     });
 
     game.physics.arcade.collide(player, enemies, (player, enemy) => {
         player.kill();
         enemy.kill();
+        explosionSFX.play();
         gameOver();
     });
 
     game.physics.arcade.collide(player, enemyBullets, (player, bullet) => {
         player.kill();
         bullet.kill();
+        explosionSFX.play();
         gameOver();
     });
 
     game.physics.arcade.collide(playerBullets, enemyBullets, (playerBullet, enemyBullet) => {
         playerBullet.kill();
         enemyBullet.kill();
+        explosionSFX.play();
     });
 };
 
@@ -198,3 +208,5 @@ let resetGame = game => {
     playerBullets.children.map(bullet => bullet.kill());
 
 };
+
+export {create, update, preload};

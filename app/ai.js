@@ -1,5 +1,11 @@
+/**
+ * Ai.js    AI component of the game.  This controls enemy units, decides when they should fire and
+ * how they should move, etc.
+ */
+
 import * as constants from './constants'
 import {accelerate, fireWeapon, capSpeed} from './action'
+
 
 /**
  * Perform AI for non-player objects in the game
@@ -26,3 +32,4 @@ let ai = (game, enemies, player, enemyBullets) => {
 };
 
 export {ai}
+

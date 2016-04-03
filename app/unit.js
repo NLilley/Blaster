@@ -1,5 +1,5 @@
 /**
- * Code relating to the creation and maintenance of game units such as the player and enemies.
+ * Unit.js  Code relating to the creation and maintenance of game units such as the player and enemies.
  * On all created units, we create the 'c' attribute for custom components, which is used for
  * tracking stats such as health outside of the main Phaser workflow.
  */
@@ -26,6 +26,9 @@ let createEnemy = (game) => {
 let createShip = (game, diameter, color) => {
     let ship = game.add.sprite(0, 0);
     game.physics.enable(ship);
+    ship.body.width = diameter;
+    ship.body.height = diameter;
+
     ship.addChild(createShipGraphic(game, diameter, color));
 
     ship.c = {
@@ -37,6 +40,9 @@ let createShip = (game, diameter, color) => {
 let createBullet = (game, diameter, color) => {
     let bullet = game.add.sprite(0, 0);
     game.physics.enable(bullet);
+    bullet.body.width = diameter;
+    bullet.body.height = diameter;
+
     bullet.addChild(createBulletGraphic(game, diameter, color));
 
     bullet.c = {};

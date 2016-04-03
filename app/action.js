@@ -1,7 +1,10 @@
 /**
- * Code responsible for performing actions within the world, such as controlling motion,
+ * Action.js    Code responsible for performing actions within the world, such as controlling motion,
  * firing weapons, etc.
  */
+
+import {shootSFX} from './sound'
+import * as constants from './constants'
 
 /**
  * Accelerate the unit in the direction specified by x and y.
@@ -46,8 +49,8 @@ let fireWeapon = (unit, direction, bulletPool, currentTime) => {
     if (bullet == null) return;
 
     bullet.reset(
-        unit.position.x + direction.x * unit.width * 0.5 * unit.scale.x,
-        unit.position.y + direction.y * unit.height * 0.5 * unit.scale.y
+        unit.position.x + direction.x * unit.width * 0.8 * unit.scale.x,
+        unit.position.y + direction.y * unit.height * 0.8 * unit.scale.y
     );
 
     bullet.body.velocity.set(
@@ -57,6 +60,7 @@ let fireWeapon = (unit, direction, bulletPool, currentTime) => {
 
     bullet.lifespan = unit.c.weapon.bulletLifespan;
     unit.c.weapon.lastFired = currentTime;
+    shootSFX.play();
 };
 
 export {accelerate, capSpeed, fireWeapon}

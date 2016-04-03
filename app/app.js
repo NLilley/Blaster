@@ -1,12 +1,7 @@
-/*
- Nicholas Lilley @ 2016
- Please forgive the horrendous graphics!
- */
-
 import _ from 'lodash';
 
 import * as constants from './constants'
-import {create, update} from './daemon'
+import {preload, create, update} from './daemon'
 
 let appDOMElement = document.querySelector('.app');
 
@@ -21,13 +16,10 @@ Phaser.Group.prototype.map = function map(fn) {
     return this.children.map(fn);
 };
 
-Phaser.Group.prototype.find = function find(fn){
+Phaser.Group.prototype.find = function find(fn) {
     return this.children.find(fn);
 };
 
-Phaser.Group.prototype.filter = function(fn){
+Phaser.Group.prototype.filter = function (fn) {
     return this.children.filter(fn);
 };
-
-function preload(game) {
-}
