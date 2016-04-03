@@ -9,7 +9,7 @@ app.get('*', function(req, res){
     res.sendFile(path.join(__dirname, 'main.html'));
 });
 
-console.log('Starting shooter game server');
-console.log('Listening on port 8002');
+console.log('Starting blaster game server');
+console.log('Listening on port 8003');
 
-app.listen(8002);
+app.listen(8003);
