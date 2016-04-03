@@ -44,6 +44,7 @@ function preload(game) {
  */
 function create(game) {
     game.stage.backgroundColor = '#0c0020';
+    game.stage.disableVisibilityChange = true;
     initializeSound(game);
     initializeGameSystems(game);
     initializeInput(game);

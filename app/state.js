@@ -26,7 +26,10 @@ var state = (game, aliveEnemies, enemies, player, indicators) => {
 let spawnEnemies = (game, aliveEnemies, enemies, player) => {
     if (aliveEnemies.length < constants.ENEMY_AMOUNT_MAX &&
         game.time.now - lastTimeEnemyAdded > constants.ENEMY_SPAWN_RATE) {
+
         let enemyToReset = enemies.children.find(enemy => !enemy.alive);
+        if (enemyToReset == null) return;
+
         let spawnPoint = new Phaser.Point(500, 0);
         spawnPoint.rotate(0, 0, game.rnd.integerInRange(0, 360), true);
         enemyToReset.reset(player.x + spawnPoint.x, player.y + spawnPoint.y);

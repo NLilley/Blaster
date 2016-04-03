@@ -5,7 +5,11 @@ var app = express();
 
 app.use('/assets', express.static('./assets'));
 
-app.get('*', function(req, res){
+app.get('/about', function(req, res){
+   res.sendFile(path.join(__dirname, 'about.html'));
+});
+
+app.get('/', function(req, res){
     res.sendFile(path.join(__dirname, 'main.html'));
 });
 

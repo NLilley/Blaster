@@ -1,0 +1,28 @@
+body {
+    background-color: #444;
+}
+
+.app canvas {
+    margin: 20px auto 10px;
+    cursor: default;
+}
+
+.footer {
+    text-align: center;
+    color: #aaa;
+}
+
+.about {
+    text-align: center;
+    color: #aaa;
+    width: 640px;
+    margin: auto;
+}
+
+a {
+    color: white;
+}
+
+a:visited{
+    color: white;
+}

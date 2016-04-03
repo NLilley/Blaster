@@ -7,7 +7,7 @@ export const GAME_HEIGHT = 480;
 
 export const PLAYER_ACCELERATION = 1000;
 export const PLAYER_SPEED_MAX = 500;
-export const PLAYER_FIRE_RATE = 80;
+export const PLAYER_FIRE_RATE = 185;
 export const PLAYER_BULLET_SPEED = 800;
 export const PLAYER_BULLET_AMOUNT = 256;
 export const PLAYER_BULLET_DIAMETER = 16;

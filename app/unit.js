@@ -38,6 +38,8 @@ let createShip = (game, diameter, color) => {
 };
 
 let createBullet = (game, diameter, color) => {
+    // TODO Perhaps use generateTexture on graphics to produce more efficient graphics.
+
     let bullet = game.add.sprite(0, 0);
     game.physics.enable(bullet);
     bullet.body.width = diameter;
