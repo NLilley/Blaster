@@ -16,4 +16,4 @@ app.get('/', function(req, res){
 console.log('Starting blaster game server');
 console.log('Listening on port 8003');
 
-app.listen(8003);
+app.listen(8080);
