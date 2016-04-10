@@ -19,3 +19,5 @@ and then transfer the files from the build folder to the assets folder.  Then st
 > node server.js
 
 Both methods will make the game available to you at [localhost:8080](localhost:8080)
+
+Alternativey, visit [http://www.nlilley.io:8003/](http://www.nlilley.io:8003/)
